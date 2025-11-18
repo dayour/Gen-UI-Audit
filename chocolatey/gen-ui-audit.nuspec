@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>gen-ui-audit</id>
+    <version>1.0.0</version>
+    <packageSourceUrl>https://github.com/dayour/Gen-UI-Audit</packageSourceUrl>
+    <owners>dayour</owners>
+    <title>Gen.UI.Audit</title>
+    <authors>Darbot Labs</authors>
+    <projectUrl>https://github.com/dayour/Gen-UI-Audit</projectUrl>
+    <licenseUrl>https://github.com/dayour/Gen-UI-Audit/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/dayour/Gen-UI-Audit</projectSourceUrl>
+    <docsUrl>https://github.com/dayour/Gen-UI-Audit/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/dayour/Gen-UI-Audit/issues</bugTrackerUrl>
+    <tags>ui testing playwright automation powershell visual-regression audit</tags>
+    <summary>Portable UI audit framework combining Playwright browser automation with Yumlog screen capture</summary>
+    <description>
+# Gen.UI.Audit
+
+A lightweight, portable UI audit framework that combines Playwright browser automation with Yumlog screen capture capabilities for comprehensive UI validation.
+
+## Features
+
+- **Multi-browser testing**: Chromium, Firefox, and WebKit support
+- **Visual regression**: Screenshot comparison and baseline management
+- **PowerShell integration**: Native Windows automation with Skills modules
+- **Flexible configuration**: JSON-based configuration system
+- **Comprehensive reports**: HTML reports with detailed test results
+- **Screen recording**: Optional Yumlog integration for session recording
+- **Test templates**: Ready-to-use templates for common UI patterns
+
+## Installation
+
+After Chocolatey installation, the framework will be available at:
+`C:\ProgramData\Gen.UI.Audit\`
+
+## Quick Start
+
+```powershell
+# Navigate to installation directory
+cd C:\ProgramData\Gen.UI.Audit
+
+# Install Node dependencies (first time only)
+npm install
+
+# Install Playwright browsers (first time only)
+npx playwright install chromium
+
+# Run a basic audit
+.\launchers\audit-ui.ps1 -Target ".\your-app.html"
+```
+
+## Dependencies
+
+- PowerShell 5.1+ or PowerShell Core 7+
+- Node.js 16+ (installed automatically by Chocolatey)
+- FFmpeg (optional, for Yumlog screen capture)
+
+## Documentation
+
+- **README**: Complete framework documentation
+- **API Reference**: Detailed command reference
+- **Quick Start Guide**: Get started in minutes
+- **Test Templates**: Reusable test patterns
+
+## Repository
+
+https://github.com/dayour/Gen-UI-Audit
+    </description>
+    <releaseNotes>
+### 1.0.0
+- Initial release
+- Playwright + Yumlog integration
+- PowerShell Skills modules
+- Comprehensive documentation
+- Multi-browser support
+- Visual regression testing
+- 28 example tests included
+    </releaseNotes>
+    <dependencies>
+      <dependency id="nodejs" version="16.0.0" />
+      <dependency id="powershell-core" version="7.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
