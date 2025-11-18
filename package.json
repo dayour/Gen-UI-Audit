@@ -1,0 +1,23 @@
+{
+  "name": "yumlog",
+  "version": "1.0.0",
+  "description": "Darbot Yumlog - PowerShell-based screen capture and recording utility",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "keywords": [
+    "screen-capture",
+    "recording",
+    "ffmpeg",
+    "powershell",
+    "automation"
+  ],
+  "author": "Darbot Labs",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

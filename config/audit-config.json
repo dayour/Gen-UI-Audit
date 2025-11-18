@@ -1,0 +1,29 @@
+{
+  "playwright": {
+    "defaultBrowser": "chromium",
+    "headless": true,
+    "timeout": 30000,
+    "retries": 2,
+    "workers": "auto"
+  },
+  "yumlog": {
+    "defaultFps": 10,
+    "videoFormat": "mp4",
+    "screenshotFormat": "png",
+    "outputDir": "./audit-results",
+    "screenshotFps": 2,
+    "recordingFps": 15
+  },
+  "validation": {
+    "accessibility": true,
+    "performance": true,
+    "visualRegression": false,
+    "responsiveness": true
+  },
+  "reports": {
+    "format": "html",
+    "outputDir": "./playwright-report",
+    "keepHistory": true,
+    "maxHistoryItems": 10
+  }
+}
