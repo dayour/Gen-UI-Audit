@@ -60,11 +60,13 @@ Gen.UI.Audit/
 │   ├── Capture-Screens.ps1          # Embedded Yumlog screenshot capture
 │   ├── Record-Screen.ps1            # Embedded Yumlog video recording
 │   ├── Run-FFmpeg.ps1               # Portable FFmpeg runner
-│   └── Paperboy.ps1                 # Half-step frame navigation helper
+│   ├── Paperboy.ps1                 # Half-step frame navigation helper
+│   └── Paperboy.Bundle.ps1          # Lightweight bundle courier utility
 ├── launchers/                   # User-facing commands
 │   ├── audit-ui.ps1                 # Main audit command
 │   ├── yumlog.ps1                   # Embedded Yumlog CLI
 │   ├── install-yumlog.ps1           # Optional local FFmpeg installer
+│   ├── paperboy.ps1                 # Pack/list/unpack/toss file bundles
 │   └── record-terminals.ps1         # Terminal/window recording helper
 ├── tests/                       # Playwright test suite
 │   ├── ui-audit.template.spec.ts    # Test template
@@ -93,6 +95,9 @@ Gen.UI.Audit/
 
 # Record UI Session with embedded Yumlog
 .\launchers\yumlog.ps1 start -DurationSec <seconds> -OutFile ".\audit-results\videos\session.mp4"
+
+# Pack files into a lightweight Paperboy bundle
+.\launchers\paperboy.ps1 pack .\Skills, .\README.md -OutFile .\audit-results\gen-ui-audit.paperboy.zip
 
 # Install local FFmpeg if it is not already available
 .\launchers\install-yumlog.ps1
