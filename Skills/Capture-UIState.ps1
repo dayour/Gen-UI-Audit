@@ -29,9 +29,12 @@ during automated testing. Supports baseline capture and visual regression testin
 
 $ErrorActionPreference = 'Stop'
 
-# Import Yumlog capture functionality
-$yumlogRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-. "$yumlogRoot\Skills\Capture-Screens.ps1"
+# Import embedded Yumlog capture functionality.
+$yumlogScript = Join-Path $PSScriptRoot "Capture-Screens.ps1"
+if (-not (Test-Path -LiteralPath $yumlogScript)) {
+    throw "Embedded Yumlog capture script not found: $yumlogScript"
+}
+. $yumlogScript
 
 # Create output directory
 $testOutDir = Join-Path $OutDir $TestName

@@ -1,7 +1,14 @@
 param(
     [Parameter(Mandatory=$true)]
+    [ValidateNotNullOrEmpty()]
     [string]$Target,
     
+    [ValidateScript({
+        if ($_ -and -not (Test-Path -LiteralPath $_)) {
+            throw "Test file does not exist: $_"
+        }
+        $true
+    })]
     [string]$TestFile = "",
     
     [ValidateSet('chromium', 'firefox', 'webkit', 'all')]
@@ -10,6 +17,8 @@ param(
     [switch]$Headed = $false,
     [switch]$CaptureScreenshots = $true,
     [switch]$RecordVideo = $false,
+
+    [ValidateSet('html', 'list', 'json', 'junit')]
     [string]$Reporter = 'html'
 )
 
@@ -40,8 +49,11 @@ if ($Target -match '^https?://') {
     Write-Host "  Target: $Target (Remote URL)" -ForegroundColor Green
 } elseif ($Target -match '^file://') {
     Write-Host "  Target: $Target (Local File)" -ForegroundColor Green
+} elseif (Test-Path -LiteralPath $Target) {
+    $Target = ([System.Uri](Resolve-Path -LiteralPath $Target).ProviderPath).AbsoluteUri
+    Write-Host "  Target: $Target (Local File)" -ForegroundColor Green
 } else {
-    Write-Error "Invalid target. Must be http://, https://, or file:// URL"
+    Write-Error "Invalid target. Must be http://, https://, file://, or an existing local path"
 }
 
 # Prepare test file
@@ -72,6 +84,10 @@ if ($RecordVideo) {
     
     $yumlogRoot = Split-Path -Parent $PSScriptRoot
     $recordScript = Join-Path $yumlogRoot "Skills\Record-Screen.ps1"
+
+    if (-not (Test-Path -LiteralPath $recordScript)) {
+        throw "Yumlog recording script not found: $recordScript"
+    }
     
     $captureJob = Start-Job -ScriptBlock {
         param($script, $fps, $duration, $out)
@@ -87,21 +103,23 @@ if ($RecordVideo) {
 
 # Run Playwright tests
 Write-Host "[4/5] Running Playwright tests..." -ForegroundColor Yellow
-. "$PSScriptRoot\..\Skills\Run-PlaywrightTest.ps1" `
-    -TestFile $TestFile `
-    -Target $Target `
-    -Browser $Browser `
-    -Headed:$Headed `
-    -Reporter $Reporter
-
-# Stop Yumlog capture
-if ($captureJob) {
-    Write-Host "[5/5] Stopping video recording..." -ForegroundColor Yellow
-    Stop-Job $captureJob
-    Remove-Job $captureJob
-    Write-Host "  Recording saved" -ForegroundColor Green
-} else {
-    Write-Host "[5/5] Finalizing..." -ForegroundColor Yellow
+try {
+    . "$PSScriptRoot\..\Skills\Run-PlaywrightTest.ps1" `
+        -TestFile $TestFile `
+        -Target $Target `
+        -Browser $Browser `
+        -Headed:$Headed `
+        -Reporter $Reporter
+} finally {
+    # Stop Yumlog capture even when Playwright fails.
+    if ($captureJob) {
+        Write-Host "[5/5] Stopping video recording..." -ForegroundColor Yellow
+        Stop-Job $captureJob
+        Remove-Job $captureJob
+        Write-Host "  Recording saved" -ForegroundColor Green
+    } else {
+        Write-Host "[5/5] Finalizing..." -ForegroundColor Yellow
+    }
 }
 
 # Summary

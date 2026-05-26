@@ -36,7 +36,7 @@ Write-Host "Gen.UI.Audit installed to: $installDir" -ForegroundColor Green
 Write-Host "Installing Node.js dependencies..." -ForegroundColor Cyan
 Push-Location $installDir
 try {
-    & npm install --production
+    & npm install
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "npm install completed with warnings. You may need to run 'npm install' manually."
     } else {
@@ -61,7 +61,7 @@ Write-Host ""
 Write-Host "Next Steps:" -ForegroundColor Cyan
 Write-Host "  1. Install Playwright browsers:" -ForegroundColor White
 Write-Host "     cd $installDir" -ForegroundColor Gray
-Write-Host "     npx playwright install chromium" -ForegroundColor Gray
+    Write-Host "     npm run install:browsers -- chromium" -ForegroundColor Gray
 Write-Host ""
 Write-Host "  2. Run your first audit:" -ForegroundColor White
 Write-Host "     audit-ui.ps1 -Target "".\your-app.html""" -ForegroundColor Gray

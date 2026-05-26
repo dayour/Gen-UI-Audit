@@ -6,7 +6,7 @@
 
 ### Prerequisites
 - **PowerShell 5.1+** (Windows built-in) or **PowerShell Core 7+**
-- **Node.js 16+** and npm
+- **Node.js 18+** and npm 9+
 - **FFmpeg** (auto-installed by Yumlog)
 
 ### Setup
@@ -16,7 +16,7 @@ cd Gen.UI.Audit
 npm install
 
 # 2. Install Playwright browsers
-npx playwright install chromium
+npm run install:browsers -- chromium
 
 # 3. (Optional) Install all browsers for cross-browser testing
 npx playwright install
@@ -39,7 +39,7 @@ npx playwright install
 ### 3. Record UI Interaction Session
 ```powershell
 # Capture screen while testing manually
-.\launchers\record-session.ps1 -Url "https://example.com" -Duration 60
+.\launchers\yumlog.ps1 start -DurationSec 60 -OutFile ".\audit-results\videos\session.mp4"
 ```
 
 ### 4. Visual Validation with Yumlog
@@ -55,18 +55,22 @@ Gen.UI.Audit/
 ├── Skills/                    # Reusable PowerShell modules
 │   ├── Run-PlaywrightTest.ps1     # Execute Playwright tests
 │   ├── Capture-UIState.ps1        # Yumlog screen capture integration
-│   ├── Analyze-UIScreenshot.ps1   # AI visual analysis
-│   └── Generate-UITest.ps1        # Auto-generate test templates
+│   ├── Capture-Screens.ps1        # Embedded Yumlog screenshot capture
+│   ├── Record-Screen.ps1          # Embedded Yumlog recording
+│   ├── Run-FFmpeg.ps1             # Portable FFmpeg runner
+│   └── Paperboy.ps1               # Half-step frame navigation helper
 ├── launchers/                 # User-facing commands
 │   ├── audit-ui.ps1              # Main audit command
-│   ├── record-session.ps1        # Record UI session with Yumlog
-│   └── validate-ui.ps1           # Run validation suite
+│   ├── yumlog.ps1                # Embedded Yumlog CLI
+│   ├── install-yumlog.ps1        # Optional FFmpeg installer
+│   └── record-terminals.ps1      # Terminal/window recorder
 ├── tests/                     # Playwright test templates
 │   ├── ui-audit.template.spec.ts  # Base template
 │   └── examples/                  # Example tests
 │       └── yumlog-manager.spec.ts # Reference implementation
 ├── config/                    # Configuration
-│   └── audit-config.json          # Default settings
+│   ├── audit-config.json          # Default settings
+│   └── tools.json                 # Embedded Yumlog defaults
 ├── docs/                      # Documentation
 │   ├── SESSION-AUDIT.md           # Complete session log
 │   ├── QUICK-START.md             # This file
@@ -86,7 +90,7 @@ Gen.UI.Audit/
     -TestFile "tests/smoke-test.spec.ts" `
     -Browser "chromium" `
     -Headed $false `
-    -Report $true
+    -Reporter "html"
 ```
 
 **Parameters:**
@@ -94,41 +98,39 @@ Gen.UI.Audit/
 - `-TestFile` - Playwright test file (optional, uses template if not specified)
 - `-Browser` - chromium, firefox, webkit, or all
 - `-Headed` - Show browser window ($true) or headless ($false)
-- `-Report` - Generate HTML report ($true by default)
+- `-Reporter` - html, list, json, or junit
 
-### `record-session.ps1`
-**Record UI interaction** - Captures screen with Yumlog during testing
+### `yumlog.ps1`
+**Record UI interaction** - Captures screen with embedded Yumlog
 
 ```powershell
-.\launchers\record-session.ps1 `
-    -Url "https://example.com" `
-    -Duration 30 `
+.\launchers\yumlog.ps1 start `
+    -DurationSec 30 `
     -Fps 10 `
-    -OutFile ".\recordings\session.mp4"
+    -OutFile ".\audit-results\videos\session.mp4"
 ```
 
 **Parameters:**
-- `-Url` - Website to test (opens in browser)
-- `-Duration` - Recording duration in seconds
+- `start|get|count|size|config` - Yumlog action
+- `-DurationSec` - Recording duration in seconds
 - `-Fps` - Frames per second (10-30 recommended)
 - `-OutFile` - Output video file path
 
-### `validate-ui.ps1`
-**Validation suite** - Runs comprehensive UI checks
+### `record-terminals.ps1`
+**Terminal/window recorder** - Records visible terminal windows and extracts Paperboy frames
 
 ```powershell
-.\launchers\validate-ui.ps1 `
-    -Target "https://example.com" `
-    -Checks @('accessibility', 'responsiveness', 'performance')
+.\launchers\record-terminals.ps1 `
+    -DurationSec 10 `
+    -Depth 4 `
+    -Fps 15
 ```
 
 **Parameters:**
-- `-Target` - URL or file path to validate
-- `-Checks` - Array of validation types
-  - `accessibility` - WCAG compliance
-  - `responsiveness` - Mobile/tablet viewports
-  - `performance` - Load times, metrics
-  - `visual` - Screenshot comparison
+- `-DurationSec` - Recording duration in seconds
+- `-Depth` - Paperboy extraction depth
+- `-Fps` - Recording frames per second
+- `-WindowTitle` - Optional window-title filter
 
 ## Writing Tests
 
@@ -155,10 +157,9 @@ test.describe('My App', () => {
 
 ### Generate Test from UI Interaction
 ```powershell
-.\Skills\Generate-UITest.ps1 `
-    -Url "https://example.com" `
-    -Actions @('click button', 'fill form', 'submit') `
-    -OutFile "tests/generated-test.spec.ts"
+.\launchers\audit-ui.ps1 `
+    -Target "https://example.com" `
+    -TestFile "tests\ui-audit.template.spec.ts"
 ```
 
 ## Yumlog Integration
@@ -170,7 +171,7 @@ import { exec } from 'child_process';
 
 test('user login flow with screen capture', async ({ page }) => {
   // Start Yumlog capture
-  exec('pwsh -Command ".\\..\\Skills\\Record-Screen.ps1 -Fps 10 -DurationSec 30 -OutFile .\\recordings\\login-flow.mp4"');
+  exec('pwsh -Command ".\\..\\Skills\\Record-Screen.ps1 -Fps 10 -DurationSec 30 -OutFile .\\audit-results\\videos\\login-flow.mp4"');
   
   // Perform test actions
   await page.goto('https://example.com/login');
@@ -242,7 +243,7 @@ npx playwright test --project=chromium --project=firefox --project=webkit
 ### 3. Accessibility Audit
 ```powershell
 # Focus on accessibility testing
-.\launchers\validate-ui.ps1 -Target "https://example.com" -Checks @('accessibility')
+.\launchers\audit-ui.ps1 -Target "https://example.com" -TestFile ".\tests\ui-audit.template.spec.ts" -Reporter list
 ```
 
 ### 4. Visual Regression
@@ -253,14 +254,14 @@ npx playwright test --project=chromium --project=firefox --project=webkit
 # Run tests
 npx playwright test
 
-# Compare screenshots
-.\Skills\Analyze-UIScreenshot.ps1 -TestName "Dashboard" -CompareMode "pixel-diff"
+# Compare screenshot set sizes against the saved baseline
+.\Skills\Capture-UIState.ps1 -TestName "Dashboard" -CompareToBaseline $true
 ```
 
 ### 5. Record User Session
 ```powershell
 # Record manual testing session
-.\launchers\record-session.ps1 -Url "https://example.com" -Duration 120 -Fps 15 -OutFile "user-session-$(Get-Date -Format 'yyyyMMdd-HHmmss').mp4"
+.\launchers\yumlog.ps1 start -DurationSec 120 -Fps 15 -OutFile ".\audit-results\videos\user-session-$(Get-Date -Format 'yyyyMMdd-HHmmss').mp4"
 ```
 
 ## Troubleshooting

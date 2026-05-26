@@ -5,7 +5,7 @@ Portable UI validation framework combining Playwright browser automation with Yu
 
 ## Architecture
 - `Skills/` - Core PowerShell modules
-- `launchers/` - User-facing commands (audit-ui, record-session)
+- `launchers/` - User-facing commands (audit-ui, yumlog, install-yumlog, record-terminals)
 - `tests/` - Playwright TypeScript test suite
 - `config/` - Framework configuration
 

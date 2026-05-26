@@ -164,7 +164,7 @@ file://fschia/github/darbot-repos/Yumlog/yumlog-manager.html
     "test:debug": "playwright test --debug"
   },
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.60.0"
   }
 }
 
@@ -172,8 +172,8 @@ file://fschia/github/darbot-repos/Yumlog/yumlog-manager.html
 npm install
 
 # Install Playwright browsers
-npx playwright install chromium
-# Result: Chromium 141.0.7390.37 downloaded
+npm run install:browsers -- chromium
+# Result: Current Chromium runtime downloaded by Playwright
 ```
 
 ### 9. Playwright Configuration
@@ -212,26 +212,14 @@ export default defineConfig({
 
 ### 11. Test Execution
 ```powershell
-# Copy to local directory (UNC path workaround)
-$temp = 'C:\Temp\YumlogTest'
-Copy-Item \\fschia\github\darbot-repos\Yumlog\yumlog-manager.html $temp
-Copy-Item \\fschia\github\darbot-repos\Yumlog\tests\yumlog-manager.spec.ts $temp
-Copy-Item \\fschia\github\darbot-repos\Yumlog\playwright.config.ts $temp
-Copy-Item \\fschia\github\darbot-repos\Yumlog\package.json $temp
-
-# Update file path in test
-(Get-Content .\yumlog-manager.spec.ts) -replace 'file://fschia/...', 'file:///C:/Temp/...' | Set-Content ...
-
-# Install dependencies
-cd C:\Temp\YumlogTest
+# Install dependencies in the repository
 npm install
 
-# Create proper directory structure
-New-Item -ItemType Directory -Path tests
-Move-Item .\yumlog-manager.spec.ts .\tests\
+# Install current Playwright browser runtime
+npm run install:browsers -- chromium
 
 # Run tests
-npx playwright test --project=chromium --reporter=list
+npx playwright test .\tests\examples\yumlog-manager.spec.ts --project=chromium --reporter=list
 ```
 
 **First Run:** 26/28 passed (dark mode toggle selector issue)
@@ -347,14 +335,12 @@ await page.getByRole('checkbox').click();
 await page.locator('.toggle-switch').click();
 ```
 
-### 5. UNC Path Limitations
-**Problem:** Playwright and npm don't support UNC paths (`\\server\share`)
-**Solution:** Copy to local drive for testing
+### 5. Repository-local test assets
+**Problem:** Tests are brittle when they depend on machine-specific temporary paths.
+**Solution:** Resolve assets from the repository or pass explicit environment overrides.
 ```powershell
-$temp = 'C:\Temp\YumlogTest'
-Copy-Item \\network\path\* $temp
-cd $temp
-npx playwright test
+cd Gen.UI.Audit
+npx playwright test .\tests\examples\yumlog-manager.spec.ts --project=chromium
 ```
 
 ### 6. Test Organization
@@ -457,12 +443,15 @@ Gen.UI.Audit/
 ├── Skills/           # Reusable PowerShell modules
 │   ├── Run-PlaywrightTest.ps1   # Execute Playwright tests
 │   ├── Capture-UIState.ps1       # Yumlog integration
-│   ├── Analyze-UIScreenshot.ps1  # AI visual analysis
-│   └── Generate-UITest.ps1       # Auto-generate tests
+│   ├── Capture-Screens.ps1       # Embedded Yumlog screenshot capture
+│   ├── Record-Screen.ps1         # Embedded Yumlog screen recording
+│   ├── Run-FFmpeg.ps1            # Portable FFmpeg runner
+│   └── Paperboy.ps1              # Half-step frame navigation helper
 ├── launchers/        # Top-level commands
 │   ├── audit-ui.ps1              # Main audit command
-│   ├── record-session.ps1        # Record UI interaction
-│   └── validate-ui.ps1           # Run validation suite
+│   ├── yumlog.ps1                # Embedded Yumlog CLI
+│   ├── install-yumlog.ps1        # Optional FFmpeg installer
+│   └── record-terminals.ps1      # Terminal/window recorder
 ├── tests/            # Playwright test templates
 │   └── ui-audit.template.spec.ts # Reusable test patterns
 ├── config/           # Configuration

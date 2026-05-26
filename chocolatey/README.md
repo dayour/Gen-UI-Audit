@@ -52,8 +52,8 @@ choco install gen-ui-audit -s . -y
 
 # Test the installation
 cd C:\ProgramData\Gen.UI.Audit
-npx playwright install chromium
-.\launchers\audit-ui.ps1 -Target ".\tests\examples\yumlog-manager.spec.ts"
+npm run install:browsers -- chromium
+.\launchers\audit-ui.ps1 -Target ".\yumlog-manager.html" -TestFile ".\tests\examples\yumlog-manager.spec.ts"
 
 # Uninstall
 choco uninstall gen-ui-audit -y

@@ -27,18 +27,19 @@ Main orchestrator for UI audit workflows. Combines Playwright testing with optio
 #### Syntax
 
 ```powershell
-.\launchers\audit-ui.ps1 [-TargetUrl] <String> [[-Browser] <String>] [-Record] [-Headed] [-Debug]
+.\launchers\audit-ui.ps1 -Target <String> [-TestFile <String>] [-Browser <String>] [-Headed] [-RecordVideo] [-Reporter <String>]
 ```
 
 #### Parameters
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| TargetUrl | String | Yes | - | The URL or file path to test |
+| Target | String | Yes | - | The http://, https://, or file:// URL to test |
+| TestFile | String | No | tests\ui-audit.template.spec.ts | Playwright test file to execute |
 | Browser | String | No | chromium | Browser to use (chromium, firefox, webkit, all) |
-| Record | Switch | No | false | Enable Yumlog screen recording during tests |
+| RecordVideo | Switch | No | false | Enable embedded Yumlog screen recording during tests |
 | Headed | Switch | No | false | Run browser in headed mode (visible) |
-| Debug | Switch | No | false | Enable Playwright debug mode |
+| Reporter | String | No | html | Playwright reporter (html, list, json, junit) |
 
 #### Returns
 
@@ -50,16 +51,16 @@ Main orchestrator for UI audit workflows. Combines Playwright testing with optio
 
 ```powershell
 # Basic audit of local HTML file
-.\launchers\audit-ui.ps1 -TargetUrl ".\yumlog-manager.html"
+.\launchers\audit-ui.ps1 -Target "file:///C:/path/to/yumlog-manager.html"
 
 # Audit with screen recording
-.\launchers\audit-ui.ps1 -TargetUrl ".\yumlog-manager.html" -Record
+.\launchers\audit-ui.ps1 -Target "file:///C:/path/to/yumlog-manager.html" -RecordVideo
 
 # Test across all browsers in headed mode
-.\launchers\audit-ui.ps1 -TargetUrl "https://example.com" -Browser all -Headed
+.\launchers\audit-ui.ps1 -Target "https://example.com" -Browser all -Headed
 
 # Debug mode with Firefox
-.\launchers\audit-ui.ps1 -TargetUrl ".\app.html" -Browser firefox -Debug
+.\Skills\Run-PlaywrightTest.ps1 -TestFile ".\tests\ui-audit.template.spec.ts" -Target "https://example.com" -Browser firefox -DebugMode
 ```
 
 #### Output Structure
@@ -153,7 +154,7 @@ Execute Playwright tests with configurable options.
 
 ```powershell
 . .\Skills\Run-PlaywrightTest.ps1
-Run-PlaywrightTest [-TestFile] <String> [[-Browser] <String>] [-Headed] [-Debug] [-UI]
+Run-PlaywrightTest [-TestFile] <String> [-Target <String>] [[-Browser] <String>] [-Headed] [-DebugMode] [-UIMode] [-Reporter <String>]
 ```
 
 #### Parameters
@@ -161,10 +162,12 @@ Run-PlaywrightTest [-TestFile] <String> [[-Browser] <String>] [-Headed] [-Debug]
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | TestFile | String | Yes | - | Path to test file or directory |
+| Target | String | No | - | URL passed to tests as `PLAYWRIGHT_TARGET_URL` |
 | Browser | String | No | chromium | Browser(s): chromium, firefox, webkit, all |
 | Headed | Switch | No | false | Run in headed mode (visible browser) |
-| Debug | Switch | No | false | Enable debug mode (pauses execution) |
-| UI | Switch | No | false | Launch Playwright UI mode |
+| DebugMode | Switch | No | false | Enable debug mode (pauses execution) |
+| UIMode | Switch | No | false | Launch Playwright UI mode |
+| Reporter | String | No | html | Playwright reporter (html, list, json, junit) |
 
 #### Returns
 
@@ -185,10 +188,10 @@ $result = Run-PlaywrightTest -TestFile ".\tests"
 $result = Run-PlaywrightTest -TestFile ".\tests\login.spec.ts" -Browser firefox -Headed
 
 # Debug mode for troubleshooting
-$result = Run-PlaywrightTest -TestFile ".\tests\failing.spec.ts" -Debug
+$result = Run-PlaywrightTest -TestFile ".\tests\failing.spec.ts" -DebugMode
 
 # Interactive UI mode
-$result = Run-PlaywrightTest -TestFile ".\tests" -UI
+$result = Run-PlaywrightTest -TestFile ".\tests" -UIMode
 
 # Test all browsers
 $result = Run-PlaywrightTest -TestFile ".\tests" -Browser all
@@ -200,8 +203,8 @@ $result = Run-PlaywrightTest -TestFile ".\tests" -Browser all
 |------|------|----------|
 | Headless | (default) | CI/CD, automated testing |
 | Headed | -Headed | Visual debugging, development |
-| Debug | -Debug | Step through tests, inspect failures |
-| UI | -UI | Interactive test development |
+| Debug | -DebugMode | Step through tests, inspect failures |
+| UI | -UIMode | Interactive test development |
 
 #### Output
 
@@ -371,11 +374,11 @@ npx playwright test myapp.spec.ts
 
 ```powershell
 # 1. Run full audit with recording
-.\launchers\audit-ui.ps1 -TargetUrl ".\app.html" -Record -Browser all
+.\launchers\audit-ui.ps1 -Target ".\app.html" -RecordVideo -Browser all
 
 # 2. Review results
 # - Open playwright-report/index.html
-# - Check yumlog-recording.mp4
+# - Check audit-results/videos for Yumlog recordings
 # - Compare baseline screenshots
 ```
 
@@ -387,17 +390,17 @@ Copy-Item ".\tests\ui-audit.template.spec.ts" ".\tests\newapp.spec.ts"
 
 # 2. Run in UI mode for development
 . .\Skills\Run-PlaywrightTest.ps1
-Run-PlaywrightTest -TestFile ".\tests\newapp.spec.ts" -UI
+Run-PlaywrightTest -TestFile ".\tests\newapp.spec.ts" -UIMode
 
 # 3. Debug failing tests
-Run-PlaywrightTest -TestFile ".\tests\newapp.spec.ts" -Debug -Headed
+Run-PlaywrightTest -TestFile ".\tests\newapp.spec.ts" -DebugMode -Headed
 ```
 
 ### CI/CD Integration
 
 ```powershell
 # Headless run for automated pipeline
-.\launchers\audit-ui.ps1 -TargetUrl $env:TEST_URL -Browser chromium
+.\launchers\audit-ui.ps1 -Target $env:TEST_URL -Browser chromium
 
 # Exit code indicates pass/fail
 if ($LASTEXITCODE -ne 0) {

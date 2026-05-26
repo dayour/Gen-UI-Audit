@@ -1,6 +1,5 @@
 # Gen.UI.Audit
 node_modules/
-package-lock.json
 
 # Playwright
 playwright-report/
@@ -9,6 +8,8 @@ test-results/
 
 # Audit Results
 audit-results/
+.tools/
+yumlogs/
 
 # Yumlog Captures
 *.mp4

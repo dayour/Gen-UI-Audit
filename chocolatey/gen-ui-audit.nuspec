@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>gen-ui-audit</id>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packageSourceUrl>https://github.com/dayour/Gen-UI-Audit</packageSourceUrl>
     <owners>dayour</owners>
     <title>Gen.UI.Audit</title>
@@ -27,7 +27,7 @@ A lightweight, portable UI audit framework that combines Playwright browser auto
 - **PowerShell integration**: Native Windows automation with Skills modules
 - **Flexible configuration**: JSON-based configuration system
 - **Comprehensive reports**: HTML reports with detailed test results
-- **Screen recording**: Optional Yumlog integration for session recording
+- **Embedded Yumlog**: Portable screen capture, recording, and FFmpeg integration
 - **Test templates**: Ready-to-use templates for common UI patterns
 
 ## Installation
@@ -45,7 +45,7 @@ cd C:\ProgramData\Gen.UI.Audit
 npm install
 
 # Install Playwright browsers (first time only)
-npx playwright install chromium
+npm run install:browsers -- chromium
 
 # Run a basic audit
 .\launchers\audit-ui.ps1 -Target ".\your-app.html"
@@ -54,8 +54,8 @@ npx playwright install chromium
 ## Dependencies
 
 - PowerShell 5.1+ or PowerShell Core 7+
-- Node.js 16+ (installed automatically by Chocolatey)
-- FFmpeg (optional, for Yumlog screen capture)
+- Node.js 18+ (installed automatically by Chocolatey)
+- FFmpeg (optional; install-yumlog.ps1 can provision a local copy)
 
 ## Documentation
 
@@ -69,6 +69,13 @@ npx playwright install chromium
 https://github.com/dayour/Gen-UI-Audit
     </description>
     <releaseNotes>
+### 1.1.0
+- Embedded portable Yumlog runtime from darbot.yumlog
+- Upgraded Playwright dependency baseline
+- Added dynamic PLAYWRIGHT_TARGET_URL support
+- Added launcher validation for target, test files, and reporters
+- Renamed Playwright runner switches to DebugMode and UIMode with compatibility aliases
+
 ### 1.0.0
 - Initial release
 - Playwright + Yumlog integration
@@ -79,8 +86,8 @@ https://github.com/dayour/Gen-UI-Audit
 - 28 example tests included
     </releaseNotes>
     <dependencies>
-      <dependency id="nodejs" version="16.0.0" />
-      <dependency id="powershell-core" version="7.0.0" />
+      <dependency id="nodejs" version="18.0.0" />
+      <dependency id="powershell-core" version="7.4.0" />
     </dependencies>
   </metadata>
   <files>

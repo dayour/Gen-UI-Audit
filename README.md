@@ -33,7 +33,7 @@ cd Gen.UI.Audit
 npm install
 
 # 3. Install Playwright browsers
-npx playwright install chromium
+npm run install:browsers -- chromium
 
 # Done! Ready to audit UIs
 ```
@@ -57,18 +57,23 @@ Gen.UI.Audit/
 ├── Skills/                      # Core functionality modules
 │   ├── Run-PlaywrightTest.ps1       # Execute Playwright tests
 │   ├── Capture-UIState.ps1          # Yumlog screenshot integration
-│   └── (more modules)
+│   ├── Capture-Screens.ps1          # Embedded Yumlog screenshot capture
+│   ├── Record-Screen.ps1            # Embedded Yumlog video recording
+│   ├── Run-FFmpeg.ps1               # Portable FFmpeg runner
+│   └── Paperboy.ps1                 # Half-step frame navigation helper
 ├── launchers/                   # User-facing commands
 │   ├── audit-ui.ps1                 # Main audit command
-│   ├── record-session.ps1           # Record UI sessions
-│   └── validate-ui.ps1              # Run validation suite
+│   ├── yumlog.ps1                   # Embedded Yumlog CLI
+│   ├── install-yumlog.ps1           # Optional local FFmpeg installer
+│   └── record-terminals.ps1         # Terminal/window recording helper
 ├── tests/                       # Playwright test suite
 │   ├── ui-audit.template.spec.ts    # Test template
 │   ├── examples/                    # Example tests
 │   │   └── yumlog-manager.spec.ts   # Reference implementation (28 tests)
 │   └── README.md
 ├── config/                      # Configuration
-│   └── audit-config.json            # Framework settings
+│   ├── audit-config.json            # Framework settings
+│   └── tools.json                   # Embedded Yumlog defaults
 ├── docs/                        # Documentation
 │   ├── SESSION-AUDIT.md             # Complete session log & learnings
 │   ├── QUICK-START.md               # Getting started guide
@@ -84,13 +89,13 @@ Gen.UI.Audit/
 
 ```powershell
 # UI Audit (main command)
-.\launchers\audit-ui.ps1 -Target <url> [-Browser chromium|firefox|webkit|all] [-Headed] [-RecordVideo]
+.\launchers\audit-ui.ps1 -Target <url> [-TestFile <path>] [-Browser chromium|firefox|webkit|all] [-Headed] [-RecordVideo] [-Reporter html|list|json|junit]
 
-# Record UI Session
-.\launchers\record-session.ps1 -Url <url> -Duration <seconds>
+# Record UI Session with embedded Yumlog
+.\launchers\yumlog.ps1 start -DurationSec <seconds> -OutFile ".\audit-results\videos\session.mp4"
 
-# Run Validation Suite
-.\launchers\validate-ui.ps1 -Target <url> -Checks @('accessibility', 'performance')
+# Install local FFmpeg if it is not already available
+.\launchers\install-yumlog.ps1
 ```
 
 ### Test Commands
@@ -107,6 +112,9 @@ npm run test:ui
 
 # Run tests in debug mode
 npm run test:debug
+
+# List discovered tests
+npm run test:list
 
 # Run specific browser
 npx playwright test --project=chromium
@@ -145,9 +153,8 @@ npx playwright show-report
 
 ### 4. Record Session for Review
 ```powershell
-.\launchers\record-session.ps1 `
-    -Url "https://example.com" `
-    -Duration 60 `
+.\launchers\yumlog.ps1 start `
+    -DurationSec 60 `
     -Fps 15 `
     -OutFile ".\audit-results\session.mp4"
 ```
@@ -304,11 +311,12 @@ npm test
 **Solution:** Increase timeout in `playwright.config.ts`
 
 ### Issue: FFmpeg not found
-**Solution:** Run parent Yumlog `.\launchers\install.ps1`
+**Solution:** Run embedded Yumlog installer `.\launchers\install-yumlog.ps1`, or set `FFMPEG_PATH`.
 
 ## Documentation
 
 - 📘 [Quick Start Guide](./docs/QUICK-START.md) - Get started in minutes
+- 🎥 [Embedded Yumlog Guide](./docs/YUMLOG.md) - Screen capture and recording commands
 - 📋 [Session Audit Log](./docs/SESSION-AUDIT.md) - Complete development history
 - 📖 [API Reference](./docs/API-REFERENCE.md) - Detailed command reference
 - 🧪 [Test README](./tests/README.md) - Test suite documentation
@@ -316,13 +324,13 @@ npm test
 ## Dependencies
 
 ### Required
-- **Node.js 16+** and npm
+- **Node.js 18+** and npm 9+
 - **PowerShell 5.1+** or PowerShell Core 7+
 
 ### Included
-- **@playwright/test 1.40.0** - Browser automation
-- **FFmpeg 7.1.1** - Screen capture (via Yumlog)
-- **Chromium** - Test browser (auto-installed)
+- **@playwright/test 1.60.0** - Browser automation
+- **Embedded Yumlog runtime** - Screen capture and recording integration
+- **Playwright browser runtimes** - Installed with `npm run install:browsers`
 
 ## Use Cases
 

@@ -74,10 +74,10 @@ All UI sections validated:
 - **1 Package manifest** (package.json)
 
 ### Dependencies
-- Node.js 16+ ✅
-- @playwright/test 1.40+ ✅
+- Node.js 18+ ✅
+- @playwright/test 1.60+ ✅
 - PowerShell 5.1+ or Core 7+ ✅
-- FFmpeg (via Yumlog parent) ✅
+- Embedded Yumlog runtime with optional FFmpeg installer ✅
 
 ### Installation Steps
 ```powershell
@@ -86,7 +86,7 @@ All UI sections validated:
 npm install
 
 # 3. Install Playwright browsers
-npx playwright install chromium
+npm run install:browsers -- chromium
 
 # 4. Run tests
 npx playwright test --project=chromium
@@ -174,12 +174,12 @@ npx playwright test --project=chromium
 ### Immediate
 - [ ] Test on different machines to verify true portability
 - [ ] Create example tests for common UI patterns (forms, modals, etc.)
-- [ ] Add video recording integration with Yumlog
+- [x] Add video recording integration with embedded Yumlog
 
 ### Future Enhancements
-- [ ] Analyze-UIScreenshot.ps1 (AI visual analysis with Copilot)
-- [ ] Generate-UITest.ps1 (auto-generate tests from HTML)
-- [ ] Record-Session.ps1 (full session recording launcher)
+- [ ] AI-assisted visual analysis workflow
+- [ ] Test generation workflow from audited UI structure
+- [x] yumlog.ps1 (embedded full-session recording launcher)
 - [ ] Integration with accessibility testing tools
 - [ ] Performance metrics collection
 - [ ] Visual diff reporting

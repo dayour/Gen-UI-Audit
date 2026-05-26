@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 /**
  * Comprehensive Playwright test suite for Yumlog Manager HTML interface
@@ -6,8 +8,8 @@ import { test, expect } from '@playwright/test';
  */
 
 test.describe('Yumlog Manager UI', () => {
-  // Use the file:// protocol for local HTML file
-  const pageUrl = 'file:///C:/Temp/YumlogTest/yumlog-manager.html';
+  // Resolve the embedded manager from the repository, with an override for external packaging tests.
+  const pageUrl = process.env.YUMLOG_MANAGER_URL || pathToFileURL(path.join(process.cwd(), 'yumlog-manager.html')).toString();
 
   test.beforeEach(async ({ page }) => {
     // Navigate to the HTML file before each test

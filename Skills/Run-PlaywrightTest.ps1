@@ -9,8 +9,12 @@ param(
     [string]$Browser = 'chromium',
     
     [switch]$Headed = $false,
-    [switch]$Debug = $false,
-    [switch]$UI = $false,
+
+    [switch]$DebugMode = $false,
+
+    [switch]$UIMode = $false,
+
+    [ValidateSet('html', 'list', 'json', 'junit')]
     [string]$Reporter = 'html'
 )
 
@@ -47,45 +51,59 @@ try {
         Write-Host ""
     }
     
-    # Build command
-    $cmd = "npx playwright test"
+    # Build command as an argument array to avoid quoting/injection issues.
+    $playwrightArgs = @('playwright', 'test')
     
     # Add test file if specified
     if ($TestFile) {
-        $cmd += " `"$TestFile`""
+        if (-not (Test-Path -LiteralPath $TestFile)) {
+            throw "Test file not found: $TestFile"
+        }
+
+        # Playwright accepts POSIX-style separators consistently across platforms.
+        $playwrightTestFile = $TestFile -replace '\\', '/'
+        $playwrightArgs += $playwrightTestFile
+        Write-Host "Using test file: $playwrightTestFile" -ForegroundColor Green
+    }
+
+    # Set environment variable for target URL if provided.
+    $previousTarget = $env:PLAYWRIGHT_TARGET_URL
+    if ($Target) {
+        $env:PLAYWRIGHT_TARGET_URL = $Target
+        Write-Host "Target URL set: $Target" -ForegroundColor Green
     }
     
     # Add browser project
     if ($Browser -eq 'all') {
         # Run all browsers
-        $cmd += " --project=chromium --project=firefox --project=webkit"
+        $playwrightArgs += @('--project=chromium', '--project=firefox', '--project=webkit')
     } else {
-        $cmd += " --project=$Browser"
+        $playwrightArgs += "--project=$Browser"
     }
     
     # Add headed mode
     if ($Headed) {
-        $cmd += " --headed"
+        $playwrightArgs += '--headed'
     }
     
     # Add debug mode
-    if ($Debug) {
-        $cmd += " --debug"
+    if ($DebugMode) {
+        $playwrightArgs += '--debug'
     }
     
     # Add UI mode
-    if ($UI) {
-        $cmd += " --ui"
+    if ($UIMode) {
+        $playwrightArgs += '--ui'
     }
     
     # Add reporter
-    $cmd += " --reporter=$Reporter"
+    $playwrightArgs += "--reporter=$Reporter"
     
-    Write-Host "Running command: $cmd" -ForegroundColor Green
+    Write-Host "Running command: npx $($playwrightArgs -join ' ')" -ForegroundColor Green
     Write-Host ""
     
     # Execute Playwright
-    Invoke-Expression $cmd
+    & npx @playwrightArgs
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""
@@ -99,9 +117,14 @@ try {
     } else {
         Write-Host ""
         Write-Host "✗ Tests failed with exit code: $LASTEXITCODE" -ForegroundColor Red
-        exit $LASTEXITCODE
+        throw "Playwright tests failed with exit code: $LASTEXITCODE"
     }
     
 } finally {
+    if ($null -eq $previousTarget) {
+        Remove-Item Env:\PLAYWRIGHT_TARGET_URL -ErrorAction SilentlyContinue
+    } else {
+        $env:PLAYWRIGHT_TARGET_URL = $previousTarget
+    }
     Pop-Location
 }
